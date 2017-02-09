@@ -33,6 +33,30 @@ exports.handle = (client) => {
     }
   })
 
+  const getAccountType = client.createStep({
+    satisfied() {
+      return Boolean(client.getConversationState().accountType)
+    },
+
+    prompt() {
+      // Need to prompt user for city    
+      console.log('Need to ask user for city')
+      client.done()
+    },
+  })
+
+  const provideBalance = client.createStep({
+    satisfied() {
+      return false;
+    },
+
+    prompt() {
+      // Need to prompt user for city    
+      console.log('Need to ask user for city')
+      client.done()
+    },
+  })
+
   client.runFlow({
     classifications: {
       // map inbound message classifications to names of streams
@@ -41,9 +65,9 @@ exports.handle = (client) => {
       // configure responses to be automatically sent as predicted by the machine learning model
     },
     streams: {
-      main: 'onboarding',
-      onboarding: [sayHello],
-      end: [untrained],
+      main: 'getBalance',
+      hi: [sayHello],
+      getBalance: [getAccountType, provideBalance],
     },
   })
 }
