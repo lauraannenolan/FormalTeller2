@@ -35,39 +35,87 @@ exports.handle = (client) => {
 
   const getAccountType = client.createStep({
     satisfied() {
-      return Boolean(client.getConversationState().accountType)
+      return Boolean(client.getConversationState().accounttype)
     },
 
   extractInfo() {
-      const accountType = client.getFirstEntityWithRole(client.getMessagePart(), 'accountType')
+      const accountType2 = client.getFirstEntityWithRole(client.getMessagePart(), 'accounttype')
 
-      if (accountType) {
+      if (accountType2) {
         client.updateConversationState({
-          accountType: accountType,
+          accounttype: accountType2,
         })
 
-        console.log('User wants the weather in:', accountType.value)
+        console.log('User wants account type:', accountType2.value)
       }
     },
 
     prompt() {
       // Need to prompt user for city    
-      console.log('Need to ask user for city')
+      client.addResponse('prompt/balance')
       client.done()
     },
   })
 
   const provideBalance = client.createStep({
     satisfied() {
+      return Boolean(client.getConversationState().balancegiven)
+    },
+
+    prompt() {
+      let data = {
+        amount: 809,
+        accounttype: client.getConversationState().accounttype.value,
+      }
+
+      client.addResponse('provide_balance/current', data)
+       client.updateConversationState({
+          balancegiven: true,
+        })
+      console.log('Need to ask user for city')
+      client.done()
+    },
+    })
+
+    const goodbye = client.createStep({
+    satisfied() {
       return false;
     },
 
     prompt() {
+
+      client.addTextResponse('See ya later')
+      console.log('BYE BYE ')
+      client.done()
+      },
+    })
+
+
+    const provideTransfer = client.createStep({
+    satisfied() {
+      return Boolean(client.getConversationState().accounttype)
+    },
+
+    extractInfo() {
+      const accountType2 = client.getFirstEntityWithRole(client.getMessagePart(), 'accounttype')
+
+      if (accountType2) {
+        client.updateConversationState({
+          accounttype: accountType2,
+        })
+
+        console.log('User wants account type:', accountType2.value)
+      }
+    },
+
+    prompt() {
       // Need to prompt user for city    
-      console.log('Need to ask user for city')
+      client.addResponse('request/transfer')
       client.done()
     },
   })
+
+
 
   client.runFlow({
     classifications: {
@@ -79,7 +127,8 @@ exports.handle = (client) => {
     streams: {
       main: 'getBalance',
       hi: [sayHello],
-      getBalance: [getAccountType, provideBalance],
+      getBalance: [getAccountType, provideBalance, provideTransfer],
+      bye: [goodbye]
     },
   })
 }
