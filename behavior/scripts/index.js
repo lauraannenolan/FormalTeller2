@@ -38,6 +38,18 @@ exports.handle = (client) => {
       return Boolean(client.getConversationState().accountType)
     },
 
+  extractInfo() {
+      const accountType = client.getFirstEntityWithRole(client.getMessagePart(), 'accountType')
+
+      if (accountType) {
+        client.updateConversationState({
+          accountType: accountType,
+        })
+
+        console.log('User wants the weather in:', accountType.value)
+      }
+    },
+
     prompt() {
       // Need to prompt user for city    
       console.log('Need to ask user for city')
